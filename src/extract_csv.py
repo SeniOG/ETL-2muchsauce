@@ -1,11 +1,28 @@
 import csv
 from csv import DictReader
 
-def read_csv(filename):
-    with open(filename, newline='') as file:
-        return list(csv.DictReader(file))
-    
-test_file = read_csv('test_file.csv')
+def read_file(filename):
 
-print(test_file)           #To check if it reads correctly
-print(len(test_file))      #To check each line in the csv file is read into 1 item in the list
+# Open the CSV file in read mode
+    with open('test_file.csv', 'r') as csv_file:
+    # Create a CSV reader object
+        csv_reader = csv.reader(csv_file)
+
+    # Define your own header or field names
+        header = ['date','location','name','order','total_price','payment_type','card_no']  # Replace these with your actual column names
+
+    # Initialize an empty list to store dictionaries
+        data_list = []
+
+        # Iterate over each row in the CSV file
+        for row in csv_reader:
+            # Create a dictionary by zipping the header with the current row values
+            row_dict = dict(zip(header, row))
+
+            # Append the dictionary to the list
+            data_list.append(row_dict)
+
+    return data_list
+
+test_file = read_file('test_file.csv')
+print(test_file)
