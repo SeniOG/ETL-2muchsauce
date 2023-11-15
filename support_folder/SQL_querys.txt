@@ -1,0 +1,43 @@
+# DATABASE CREATION QUERYS
+
+## Orders table creation query 
+
+SQL 
+CREATE TABLE Orders (
+    Orders_id INT PRIMARY KEY,
+    Order_date DATETIME,
+    Payment_type VARCHAR(255),
+    Branch VARCHAR(255)    
+);
+
+## Products table creation query
+
+SQL
+CREATE TABLE Products (
+    Product_id INT PRIMARY KEY,
+    product_name VARCHAR(255) NULL,
+    Price INT NULL
+);
+
+
+
+## Order_breakdown table creation query
+
+SQL
+
+CREATE TABLE Order_breakdown (
+    Order_ID INT,
+    Product_ID INT,
+    Quantity VARCHAR(255),
+    Branch VARCHAR(255),
+    PRIMARY KEY (Order_ID, Product_ID)
+);
+
+-- Creating a composite foreign key
+ALTER TABLE Order_breakdown
+ADD FOREIGN KEY (Order_ID) REFERENCES Orders(Orders_id);
+
+ALTER TABLE Order_breakdown
+ADD FOREIGN KEY (Product_ID) REFERENCES Products(Product_id);
+
+
