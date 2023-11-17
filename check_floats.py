@@ -1,6 +1,5 @@
 import csv
 from csv import DictReader
-
 import time
 
 def read_file(filename):
@@ -37,11 +36,14 @@ def read_file(filename):
         time.sleep(2)
         print('')
         print('HAVE A PLEASANT FRIDAY! :)')
-        exit()                   
-
-test_file = read_file('test_file_backup1.csv')
+        print('')
+        time.sleep(2)
+        exit()
 
 # print(test_file)
+test_file = read_file('test_file_backup.csv')
+
+# Create an empty list called "float_cols" to collect a complete list of 'total prices' from the "test_file" list
 float_cols = []
 for row in test_file: # loop through each row
     float_cols.append(['total_price']) # append the fifth column value to the list
