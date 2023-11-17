@@ -9,7 +9,7 @@ def read_file(filename):
 # Open the CSV file in read mode
         with open(filename, 'r') as csv_file:
     # Create a CSV reader object
-            csv_reader = csv.reader(csv_file)
+            csv_reader = csv.DictReader(csv_file)
 
         # Define your own header or field names
             header = ['date','location','name','order','total_price','payment_type','card_no']  # Replace these with your actual column names
@@ -28,16 +28,18 @@ def read_file(filename):
         
     # An Exception throws an error message if the file does not exist
     except FileNotFoundError:
+        print('')
+        time.sleep(2)
         print('Sorry - the filename you entered does not exist!')
         time.sleep(3)
         print('')
         print('EXITING THE APPLICATION...')
         time.sleep(2)
         print('')
-        print('GOOD DAY! :)')
+        print('HAVE A PLEASANT FRIDAY! :)')
         exit()                   
 
-test_file = read_file('test_file_backup.csv')
+test_file = read_file('test_file_backup1.csv')
 
 # print(test_file)
 float_cols = []
