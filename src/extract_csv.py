@@ -2,38 +2,63 @@ import csv
 from csv import DictReader
 import time
 
-def read_file(filename):
-    # Try to safely open the file if it exists
+# The read_file function is the Extraction phase of our ETL pipeline, and returns the CSV file as a list 
+# of Dictionary records
+def read_file(filename):    
+    
+    # Try to safely open the CSV file if it exists
     try:
-# Open the CSV file in read mode
-        with open('test_file.csv', 'r') as csv_file:
-    # Create a CSV reader object
+    # Open the CSV file in read mode
+        with open(filename, 'r') as csv_file:
+    
+    # Create a CSV reader object. ONLY use the "reader" class to read each row, otherwise DictReader will 
+    # treat 1st row as KEYS
             csv_reader = csv.reader(csv_file)
 
-        # Define your own header or field names
-            header = ['date','location','name','order','total_price','payment_type','card_no']  # Replace these with your actual column names
+            # Initialise the 1st dictionary list to be populated by looping through the csv_reader object
+            initial_dictionary = []
 
-        # Initialize an empty list to store dictionaries
-            data_list = []
+            # Initialise the final dictionary list to be returned by the function
+            final_dictionary = []
 
-            # Iterate over each row in the CSV file
+            # Extract each dictionary row/record (within the csv_reader object) to the initial_dictionary list
             for row in csv_reader:
-                # Create a dictionary by zipping the header with the current row values
-                row_dict = dict(zip(header, row))
+                initial_dictionary.append(row)
 
-                # Append the dictionary to the list
-                data_list.append(row_dict)
-            return data_list
+            # Create the header column names for each field of the CSV file. These are also dictionary KEYS
+            header = ['date','location','name','order','total_price','payment_type','card_no']
+
+            # Loop through the row of dictionary records contained within the initial_dictionary list
+            for values in initial_dictionary:
+                # Zip the column names and values for each dictionary record
+                zipped_data = zip(header, values)
+                # Convert the zipped KEY-VALUE pairs into dictionary format, & append to final_dictionary list.
+                final_dictionary.append(dict(zipped_data))
+        
+        # return the final_dictionary list
+        return final_dictionary
+    
     # An Exception throws an error message if the file does not exist
     except FileNotFoundError:
+        print('')
+        time.sleep(2)
         print('Sorry - the filename you entered does not exist!')
         time.sleep(3)
         print('')
         print('EXITING THE APPLICATION...')
         time.sleep(2)
         print('')
-        print('GOOD DAY! :)')
-        exit()                   
+        print('HAVE A PLEASANT FRIDAY! :)')
+        print('')
+        time.sleep(2)
+        exit()
 
+# Call the 'read_file' function in order to EXTRACT the data from the client's CSV file
 test_file = read_file('test_file.csv')
-print(test_file)
+
+# Print out the final EXTRACTED data from CSV file, in Dictionary format.
+print('\n')
+time.sleep(2)
+# print(test_file)
+
+
