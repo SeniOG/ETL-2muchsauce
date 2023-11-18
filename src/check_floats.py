@@ -24,6 +24,11 @@ def convert_floats_cols(test_file, float_cols):
 test_floats = convert_floats_cols(test_file,['total_price'])
 
 # Print out the newly updated CSV list of dictionary values with "total_price" column casted to FLOAT or None
-print(test_floats)
 print('\n')
 time.sleep(2)
+print("CLEANING CUSTOMER CSV FILE - 'total_price' COLUMN VALUES ARE TYPE CASTED TO 'Float' or None:")
+time.sleep(5)
+print('')
+print(test_floats)
+print('\n')
+time.sleep(3)

@@ -30,7 +30,7 @@ def read_file(filename):
 
             # Loop through the row of dictionary records contained within the initial_dictionary list
             for values in initial_dictionary:
-                # Zip the column names and values for each dictionary record
+                # Zip column names & values to synchronise KEYS with corresponding VALUES for each dictionary row
                 zipped_data = zip(header, values)
                 # Convert the zipped KEY-VALUE pairs into dictionary format, & append to final_dictionary list.
                 final_dictionary.append(dict(zipped_data))
@@ -59,8 +59,10 @@ test_file = read_file('test_file.csv')
 # Print out the final EXTRACTED data from CSV file, in Dictionary format.
 print('\n')
 time.sleep(2)
+print('RAW DATA FROM CUSTOMER CSV FILE - NO CHANGES MADE YET:')
+time.sleep(3)
+print('')
 print(test_file)
-print('\n')
 time.sleep(2)
 
 
