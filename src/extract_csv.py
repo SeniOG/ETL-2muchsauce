@@ -59,6 +59,8 @@ test_file = read_file('test_file.csv')
 # Print out the final EXTRACTED data from CSV file, in Dictionary format.
 print('\n')
 time.sleep(2)
-# print(test_file)
+print(test_file)
+print('\n')
+time.sleep(2)
 
 
