@@ -1,18 +1,18 @@
 from csv import DictReader
 import csv
 
-def read_file(filename):
-    with open(filename,'r') as output:
-        orders_reader = DictReader(output)
-        orders = list(orders_reader)
+# def read_file(filename):
+#     with open(filename,'r') as output:
+#         orders_reader = DictReader(output)
+#         orders = list(orders_reader)
         
-    return orders
-#def item_price(orders,order_columns):
+#     return orders
+# #def item_price(orders,order_columns):
 
 def item_price(orders, order_columns):
     for row in orders:
         for col in order_columns:
-            if col == 'Basket':
+            if col in row: #check if key exists in dict
                 split_items = row[col].split(', ')
                 
                 double_split_items = [item.split(' - ') for item in split_items]
@@ -36,17 +36,19 @@ def item_price(orders, order_columns):
                     item_dicts.append(products)
 
                 row[col] = item_dicts
+            else:
+                print(f"Key '{col}' not found in dictionary: {row}")
                 
-    print(orders)
+    return(orders)
                 
-    #if you want to see the differences between the old dataset and the new dataset, save it to a new file
-    with open('new_separated_orders.csv','w') as csvfile:
-        fieldnames = ['Date', 'Location', 'Basket', 'Total', 'Payment']
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(orders)
+#     #if you want to see the differences between the old dataset and the new dataset, save it to a new file
+#     with open('new_separated_orders.csv','w') as csvfile:
+#         fieldnames = ['Date', 'Location', 'Basket', 'Total', 'Payment']
+#         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+#         writer.writeheader()
+#         writer.writerows(orders)
                 
 
-data_list = read_file('new_test_file.csv')
-#data_list = item_price(data_list)
-data_list = item_price(data_list, ['Basket'])
+# data_list = read_file('new_test_file.csv')
+# #data_list = item_price(data_list)
+# data_list = item_price(data_list, ['Basket'])

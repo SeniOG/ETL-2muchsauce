@@ -54,14 +54,14 @@ def read_file(filename):
         exit()
 
 # Call the 'read_file' function in order to EXTRACT the data from the client's CSV file
-test_file = read_file('test_file.csv')
+# test_file = read_file('test_file.csv')
 
 # Print out the final EXTRACTED data from CSV file, in Dictionary format.
-print('\n')
-time.sleep(2)
-print('RAW DATA FROM CUSTOMER CSV FILE - NO CHANGES MADE YET:')
-time.sleep(3)
-print('')
-print(test_file)
-time.sleep(2)
+# print('\n')
+# time.sleep(2)
+# print('RAW DATA FROM CUSTOMER CSV FILE - NO CHANGES MADE YET:')
+# time.sleep(3)
+# print('')
+# print(test_file)
+# time.sleep(2)
 
