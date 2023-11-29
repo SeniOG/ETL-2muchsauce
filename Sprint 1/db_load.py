@@ -27,28 +27,32 @@ with psycopg2.connect(
     cur = connection.cursor()
     
     # # Define the SQL statements as a single string
-sql_query =  """CREATE TABLE Orders (
-    Orders_id SERIAL PRIMARY KEY,
-    Order_date TIMESTAMP,
-    Payment_type VARCHAR(255),
-    Branch VARCHAR(255)
-);
+sql_query = """
+    CREATE TABLE Orders (
+        Orders_id SERIAL PRIMARY KEY,
+        Order_date TIMESTAMP,
+        Payment_type VARCHAR(255),
+        Branch VARCHAR(255)
+    );
 
-CREATE TABLE Products (
-    Product_id SERIAL PRIMARY KEY,
-    product_name VARCHAR(255) NULL,
-    Price INT NULL
-);
+    CREATE TABLE Products (
+        Product_id SERIAL PRIMARY KEY,
+        product_name VARCHAR(255) NULL,
+        Price NUMERIC NULL -- Changing data type to NUMERIC
+    );
 
-CREATE TABLE Order_breakdown (
-    Order_ID INT,
-    Product_ID INT,
-    Quantity VARCHAR(255),
-    Branch VARCHAR(255),
-    PRIMARY KEY (Order_ID, Product_ID),
-    FOREIGN KEY (Order_ID) REFERENCES Orders(Orders_id),
-    FOREIGN KEY (Product_ID) REFERENCES Products(Product_id)
-); """
+    CREATE TABLE Order_breakdown (
+        Order_ID INT,
+        Product_ID INT,
+        Quantity VARCHAR(255),
+        Branch VARCHAR(255),
+        PRIMARY KEY (Order_ID, Product_ID),
+        FOREIGN KEY (Order_ID) REFERENCES Orders(Orders_id),
+        FOREIGN KEY (Product_ID) REFERENCES Products(Product_id)
+    );
+
+    ALTER TABLE Products ALTER COLUMN Price TYPE NUMERIC; -- Altering the Price column data type
+    """
 
     # Execute the entire query
 cur.execute(sql_query)
@@ -60,40 +64,27 @@ connection.commit()
 
 file_path = 'new_separated_orders.csv'
 
-
-
+# Read CSV data into a DataFrame
 csv_data = pd.read_csv(file_path)
 
 # Correct date format
-csv_data['Date'] = pd.to_datetime(csv_data['Date'], format='%d/%m/%Y %H:%M').dt.strftime('%Y-%m-%d %H:%M:%S')
-
-# Iterate through the DataFrame and correct 'Basket' column content
-for index, row in csv_data.iterrows():
-    try:
-        # Attempt to load the 'Basket' column as JSON
-        basket_data = json.loads(row['Basket'].replace("'", "\"").replace('None', 'null'))
-    except json.JSONDecodeError:
-        # If JSON decoding fails, handle or log the error as needed
-        print(f"JSON decoding error in row {index + 1}. Skipping this row.")
-        continue
-
-    # Update 'Basket' column with the corrected JSON string
-    csv_data.at[index, 'Basket'] = json.dumps(basket_data)
+csv_data['date'] = pd.to_datetime(csv_data['date'], format='%d/%m/%Y %I:%M %p').dt.strftime('%Y-%m-%d %H:%M:%S')
 
 # Establish connection to your PostgreSQL database
 conn = psycopg2.connect(
     host=db_host,
     database=db_name,
     user=db_user,
-    password=db_password)
+    password=db_password
+)
 cur = conn.cursor()
 
-# Iterate through the corrected DataFrame for database insertion
+# Iterate through the DataFrame for database insertion
 for index, row in csv_data.iterrows():
-    order_date = row['Date']
-    payment_type = row['Payment']
-    branch = row['Location']
-
+    order_date = row['date']
+    payment_type = row['payment_type']
+    branch = row['location']
+    
     # Insert data into Orders table
     cur.execute("""
         INSERT INTO Orders (Order_date, Payment_type, Branch)
@@ -102,13 +93,13 @@ for index, row in csv_data.iterrows():
     """, (order_date, payment_type, branch))
     order_id = cur.fetchone()[0]
 
-    # Retrieve basket data after correction
-    basket_data = json.loads(row['Basket'])
+    # Parsing the 'name' and 'order' columns
+    products = [item.strip() for item in row['order'].split(',')]
 
-    for item in basket_data:
-        product_name = item['name']
-        price = float(item['price'])
-        quantity = 1  # Assuming quantity as 1 for each item
+    for product in products:
+        product_name, price = product.rsplit('-', 1)
+        product_name = product_name.strip()
+        price = price.strip()
 
         # Insert data into Products table
         cur.execute("""
@@ -122,7 +113,7 @@ for index, row in csv_data.iterrows():
         cur.execute("""
             INSERT INTO Order_breakdown (Order_ID, Product_ID, Quantity, Branch)
             VALUES (%s, %s, %s, %s)
-        """, (order_id, product_id, quantity, branch))
+        """, (order_id, product_id, 1, branch))
 
 # Commit changes and close connections
 conn.commit()
