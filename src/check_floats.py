@@ -1,19 +1,23 @@
-
 # The "convert_floats_cols" function trys to typecast each 'total price' column value to a float, 
 # and sets it to 'None' if the value does not represent a float data type
 def convert_floats_cols(test_file, float_cols):
-#   loop through each dictionary ROW in the 'test_file' list of diictionaries
+    # Loop through each dictionary ROW in the 'test_file' list of dictionaries
     for d in test_file:
-        # loop through each KEY with the name 'total_price' and TRY to set it to a float data type
+        # Loop through each KEY with the name 'total_price' and TRY to set it to a float data type
         for col in float_cols:
-            # try to convert the value at that key to FLOAT
-            try:
-                d[col] = float(d[col])
-        # if there is a ValueError, set the value to None
-            except ValueError:
+            # Check if the value is not None before attempting to convert
+            if d[col] is not None:
+                try:
+                    d[col] = float(d[col])
+                except ValueError:
+                    # If there is a ValueError, set the value to None
+                    d[col] = None
+            else:
+                # If the value is None, leave it as None
                 d[col] = None
-#     return the updated list of dictionaries
+    # Return the updated list of dictionaries
     return test_file
+
 
 # Calling "test_floats" function to cast each "total_price" column value to a FLOAT for each dictionary record
 # test_floats = convert_floats_cols(test_file,['total_price'])

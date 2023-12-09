@@ -1,6 +1,6 @@
 import json
 import urllib.parse
-import boto3
+# import boto3 #<<<< UNCOMMENT THIS LINE
 import csv
 from io import StringIO
 from app import transform

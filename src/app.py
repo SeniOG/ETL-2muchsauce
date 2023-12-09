@@ -20,9 +20,10 @@ def transform(raw_data):
     step_two= remove_duplicate(step_one)
     step_three = remove_sens(step_two)
     step_four = convert_floats_cols(step_three,['total_price'])
-    step_five = item_price(step_four, ['Basket'])
-    step_six =  format_date(step_five,['date'])
-
+    step_five =  format_date(step_four,['date'])
+    print(step_four)
+    step_six = item_price(step_five)
+    
     final_step = step_six
     return final_step
 
