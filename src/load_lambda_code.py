@@ -1,7 +1,5 @@
 from connect_to_db import *
 from generate_sql_db import *
-#from my_utility_functions import *
-# import os
 import csv
 from io import StringIO
 import ast
@@ -9,13 +7,10 @@ from datetime import datetime
 import uuid
 
 
-# ssm_param_name = os.environ.get('SSM_PARAM_NAME') or 'NOT_SET'
 ssm_param_name = 'twomuchsauce_redshift_settings'
 
-#ohh. so the lambada_handler houses everything?
 def lambda_handler(event, context):
     print('lambda_handler: starting')
-    # try
     
     s3 = boto3.client('s3')
     print(event)
@@ -31,38 +26,14 @@ def lambda_handler(event, context):
     transactions = list(csv.DictReader(StringIO(file_content)))
 
     
-    # transactions = list(csv.DictReader(StringIO(file_content)))
-    # transactions = []
-    #to change the string vlaue for the key order to a list of dicts
     for row in transactions:
         row['order'] = ast.literal_eval(row['order'])
         
-    # print('First Transaction: ', transactions[0])
-
-    # inspect event
-    #bucket_name, file_path = get_details(event)
-    #print(f'lambda_handler: event: file=${file_path}, bucket_name=${bucket_name}')
-
-    # load file from s3
-    #file_object = get_file(bucket_name, file_path)
-    # process file as csv
-    #csv_file = do_something(file_object)
-    # transform the data /clean it / reorganize
-    #dict_or_list_of_data = my_transform_function(csv_file)
-
-    # connection
-    # redshift_details = get_ssm_param(ssm_param_name)
     connection, cursor = open_sql_database_connection_and_cursor()
 
-    # run some sql
     create_db_tables(connection, cursor)
 
-    # run some sql
-    #save_my_data(conn, cur, dict_or_list_of_data)
     products = get_product_prices(transactions)  # acutally just unique_produts_list from below
-    # branches = get_unique_branches(transactions)
-    # payment_types = ['CASH', 'CARD']
-    #print(f'lambda_handler: done, file=${file_path}')
     
     orders = insert_orders(connection, cursor, transactions)
     
@@ -90,13 +61,10 @@ def insert_products_db(connection, cursor, products):
         
         if existing_product_id is None:
             product_id = str(uuid.uuid4())
-            #data_values = data_values + (product_id,)
             # If the product doesn't exist, insert it
             insert_sql = """INSERT INTO products (product_id,product_name, price) VALUES (%s, %s,%s)"""
             cursor.execute(insert_sql, (product_id, product['name'], product['price']))
             
-            # # Fetch the last inserted product using IDENT_CURRENT
-            # cursor.execute("SELECT IDENT_CURRENT('products')")
             product['product_id'] = product_id
             connection.commit()
             
@@ -107,8 +75,7 @@ def insert_products_db(connection, cursor, products):
     return products            
         
 def insert_orders(connection, cursor, orders):
-    # connection, cursor = setup_db_connection()
-    # Insert branches into the 'branch' table
+    
     for order in orders:
         # Check if the order already exists
 
@@ -116,7 +83,7 @@ def insert_orders(connection, cursor, orders):
         sql = """INSERT INTO Orders (order_ID, order_date, payment_type, branch) VALUES (%s,%s,%s,%s)"""
         
         # Format the date as needed
-        # date_object = datetime.strptime(order['date'], '%d/%m/%Y %H:%M')
+        
         date_object = datetime.strptime(order['date'], '%d/%m/%Y %I:%M %p')
 
         formatted_date = date_object.strftime('%Y-%m-%d %H:%M')
@@ -139,29 +106,15 @@ def insert_order_breakdown(connection, cursor, transactions, orders, products):
         order_id = transaction["order_id"]
         for current_product in transaction["order"]:
             product_id = next(product["product_id"] for product in products if product["name"] == current_product["name"])
-            # quantity = current_product["quantity"]
+            quantity = current_product["quantity"]
+            flavour = current_product['flavour']
             product_price = next(product["price"] for product in products if product["product_id"] == product_id)
             total_price = quantity * product_price
-            sql = """INSERT INTO order_breakdown (order_id, product_id, quantity, total_price) VALUES (%s, %s, %s, %s)"""
-            data = (order_id, product_id, quantity, total_price)
+            sql = """INSERT INTO order_breakdown (order_id, product_id, quantity, flavour, total_price) VALUES (%s, %s, %s, %s, %s)"""
+            data = (order_id, product_id, quantity, flavour, total_price)
             cursor.execute(sql, data)
             connection.commit()  
-            
-    
-            
-     
-
-
-# def get_sequence_name(cursor, table_name, column_name):
-#     cursor.execute(f"SELECT sequence_name FROM information_schema.columns WHERE table_name='{table_name}' AND column_name='{column_name}'")
-#     sequence_name = cursor.fetchone()
-#     if sequence_name:
-#         sequence_name3 = sequence_name[0]
-#         return sequence_name3
-#     else:
-#         return None
-
-   
+             
 
 def insert_payment_type_db(connection, cursor, payment_types):
     print(payment_types)
@@ -177,14 +130,8 @@ def insert_payment_type_db(connection, cursor, payment_types):
             sql = """INSERT INTO payment_type (payment_typeID,type_name) VALUES (%s,%s)"""
             cursor.execute(sql, (payment_id,payment_types[i]))
             
-            # sequence_name2 = get_sequence_name(cursor, "payment_type", "payment_typeID")
-            
-            # Fetch the last inserted payment_typeID using IDENT_CURRENT
-            #cursor.execute(f"SELECT currval('{sequence_name2}')")
-            
-            #cursor.execute("SELECT IDENT_CURRENT('payment_type')")
             last_inserted_id = payment_id
-            #ok. so just chainging the payment_types list created above, payment_types=["CASH","CARD"] to a list of 2 dicts as described below
+            # changing the payment_types list created above, payment_types=["CASH","CARD"] to a list of 2 dicts as described below
             payment_types[i] = {'payment_type_id': last_inserted_id, 'type_name': payment_types[i]}
             connection.commit()
         else:
@@ -221,25 +168,6 @@ def insert_transactions_db(connection, cursor, transactions, branches, payment_t
     # cursor.close()
     return transactions
 
-
-# Inserting basket data into the 'basket' table
-# def insert_basket_db(connection, cursor, transactions, products):
-#     # connection, cursor = setup_db_connection()
-#     for transaction in transactions:
-#         order_id = transaction["order_id"]
-#         for current_product in transaction["basket"]:   #remeber, the value for key basket is a list of dicts so current_product is a dict
-#             product_id = next(product["product_id"] for product in products if product["name"] == current_product["product"])  #ohh so this simply runs through our 'yellow pages' called products. We simply looks at our current pruduct and then search through our documentation for the product id assosiated with it. rmemeber, our products yellow pages is distint and made up by us to help find product ids as a referecing tool.
-#             quantity = current_product["quantity"]
-#             # Insert basket data into the 'basket' table
-#             sql = """INSERT INTO basket (orderID, productID, quantity) VALUES (%s, %s, %s)"""
-#             data = (order_id, product_id, quantity)
-#             cursor.execute(sql, data)
-#             connection.commit()
-#     print("i like icecream")    
-#     #cursor.close()
-
-
-
 def get_product_prices(transactions):
     unique_products_dict = {}
 
@@ -264,5 +192,4 @@ def get_unique_branches(transactions):
             branch_names.append(record['location'])
             branches.append({'branch_name': record['location']})
     return branches
-    #so branch names is keeping track of all unique branches added to branches so far. I've read this way of doing it improves speed.
     
